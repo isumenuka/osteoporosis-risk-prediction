@@ -9,9 +9,9 @@ notebooks/
   01_Environment_Setup.ipynb      # Install libraries + configure Colab
   02_Data_Preparation.ipynb       # Load dataset + EDA
   03_Data_Preprocessing.ipynb     # Missing values, encoding, scaling, feature engineering
-  04_Model_Training.ipynb         # Gender-specific XGBoost training (Male/Female models)
-  05_Model_Evaluation.ipynb       # Metrics, confusion matrix, ROC, feature importance
-  06_SHAP_Explainability.ipynb    # SHAP analysis + interpretability plots
+  03_Data_Preprocessing.ipynb     # Missing values, encoding, scaling, feature engineering
+  04_Model_Training_and_Evaluation.ipynb # Train XGBoost models and evaluate performance
+  05_SHAP_Explainability.ipynb    # SHAP analysis + interpretability plots
 
 data/
   dataset_loaded.csv              # Saved after EDA (created by notebook 02)
@@ -67,17 +67,14 @@ outputs/
       - Create interaction features (e.g., `Age_x_Hormonal`)
       - Save `data/preprocessed_data.csv` and `models/age_scaler.pkl`
 
-   4. `04_Model_Training.ipynb`  
+   4. `04_Model_Training_and_Evaluation.ipynb`  
       - Split data into male and female cohorts
       - Train two XGBoost models (Male/Female)
-      - Save models to `models/osteoporosis_male_model.pkl` and `models/osteoporosis_female_model.pkl`
-
-   5. `05_Model_Evaluation.ipynb`  
       - Evaluate accuracy, precision, recall, F1, AUC-ROC
       - Generate confusion matrices and ROC curves
-      - Save performance tables and plots
+      - Save models and performance plots
 
-   6. `06_SHAP_Explainability.ipynb`  
+   5. `05_SHAP_Explainability.ipynb`  
       - Run SHAP summary plots, bar plots, and force plots
       - Save explainers to `models/shap_explainers.pkl`
 

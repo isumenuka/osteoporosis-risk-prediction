@@ -341,10 +341,9 @@ istumenuka/osteoporosis-risk-prediction/
 │  └─ 06_CLINICAL_VALIDATION_AND_RESULTS.md
 ├─ notebooks/
 │  ├─ 01_Data_Exploration.ipynb
-│  ├─ 02_Data_Preprocessing.ipynb
-│  ├─ 03_Feature_Engineering.ipynb
-│  ├─ 04_Model_Training.ipynb
-│  └─ 06_SHAP_Explainability.ipynb
+│  ├─ 03_Data_Preprocessing.ipynb
+│  ├─ 04_Model_Training_and_Evaluation.ipynb
+│  └─ 05_SHAP_Explainability.ipynb
 ├─ src/
 │  ├─ preprocessing.py
 │  ├─ model_training.py
