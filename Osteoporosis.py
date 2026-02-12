@@ -30,7 +30,7 @@ VALUE_MAPPING = {
         'Caucasian': 'Caucasian', 
         'Asian': 'Asian', 
         'African American': 'African American', 
-        'Hispanic': 'Caucasian',        # Mapped to majority group if not distinct in model
+        'Hispanic': 'Caucasian',        # Mapped to majority group
         'Other': 'Caucasian'            # Mapped to baseline
     },
     'Body Weight': {
@@ -49,21 +49,21 @@ VALUE_MAPPING = {
         'Moderate': 'Active'
     },
     'Alcohol Consumption': {
-        'None': 'Unknown',              # 'Unknown' appears to be the baseline/non-risk class in training data
-        'Moderate': 'Moderate', 
-        'Heavy': 'Unknown'              # Mapped to Unknown as model lacks 'Heavy' class
+        'None': 'Unknown',              # 'Unknown' appears to be the low-risk/baseline in this model (Index 1)
+        'Moderate': 'Moderate',         # 'Moderate' appears to be the high-risk class (Index 0)
+        'Heavy': 'Moderate'             # Map Heavy to the high-risk class (Moderate) instead of Unknown
     },
     'Medical Conditions': {
-        'None': 'Unknown', 
-        'Rheumatoid Arthritis': 'Rheumatoid Arthritis', 
-        'Thyroid Disorders': 'Hyperthyroidism', 
+        'None': 'Unknown',              # Mapped to Unknown (2) - baseline
+        'Rheumatoid Arthritis': 'Rheumatoid Arthritis', # (1)
+        'Thyroid Disorders': 'Hyperthyroidism',         # (0)
         'Celiac Disease': 'Unknown', 
         'Kidney Disease': 'Unknown', 
         'Other': 'Unknown'
     },
     'Medications': {
-        'None': 'Unknown', 
-        'Corticosteroids': 'Corticosteroids', 
+        'None': 'Unknown',              # Mapped to Unknown (1) - baseline
+        'Corticosteroids': 'Corticosteroids', # (0)
         'Anticonvulsants': 'Unknown', 
         'Thyroid Medication': 'Unknown', 
         'Other': 'Unknown'
