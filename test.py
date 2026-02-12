@@ -1,132 +1,194 @@
-import pandas as pd
-import joblib
-import os
+"""
+Test script for Osteoporosis Risk Prediction
+Tests both manually created cases AND real samples from osteoporosis_data.csv
+"""
 import sys
+sys.path.insert(0, '.')
 
-# Add current directory to path so we can import from Osteoporosis.py
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from Osteoporosis import load_model_assets, make_prediction
+import pandas as pd
+import random
 
-try:
-    from Osteoporosis import load_model_assets, make_prediction, VALUE_MAPPING
-    print("SUCCESS: Successfully imported modules from Osteoporosis.py")
-except ImportError as e:
-    print(f"ERROR: Error importing from Osteoporosis.py: {e}")
-    sys.exit(1)
+print("=" * 70)
+print("OSTEOPOROSIS RISK PREDICTION - COMPREHENSIVE TEST")
+print("=" * 70)
 
-def run_tests():
-    print("\nLOADING MODELS...")
-    try:
-        male_model, female_model, label_encoders, scaler = load_model_assets()
-        print("SUCCESS: Models loaded successfully.")
-    except Exception as e:
-        print(f"ERROR: Failed to load models: {e}")
-        return
+# Load models
+print("\nLOADING MODELS...")
+male_model, female_model, label_encoders, scaler = load_model_assets()
+print("SUCCESS: Models loaded successfully.")
 
-    # Define Test Cases
-    test_cases = [
-        {
-            "name": "High Risk Female (Postmenopausal, Smoker, Low Calcium)",
-            "inputs": {
-                'Age': 65, 
-                'Gender': 'Female', 
-                'Hormonal Changes': 'Postmenopausal',
-                'Family History': 'Yes', 
-                'Race/Ethnicity': 'Caucasian', 
-                'Body Weight': 'Underweight',
-                'Calcium Intake': 'Low', 
-                'Vitamin D Intake': 'Insufficient',
-                'Physical Activity': 'Sedentary', 
-                'Smoking': 'Yes', 
-                'Alcohol Consumption': 'Heavy', 
-                'Medical Conditions': 'Rheumatoid Arthritis', 
-                'Medications': 'Corticosteroids', 
-                'Prior Fractures': 'Yes'
-            }
-        },
-        {
-            "name": "Low Risk Male (Active, Young, Healthy)",
-            "inputs": {
-                'Age': 30, 
-                'Gender': 'Male', 
-                'Hormonal Changes': 'Normal',
-                'Family History': 'No', 
-                'Race/Ethnicity': 'African American', 
-                'Body Weight': 'Normal',
-                'Calcium Intake': 'Adequate', 
-                'Vitamin D Intake': 'Sufficient',
-                'Physical Activity': 'Active', 
-                'Smoking': 'No', 
-                'Alcohol Consumption': 'None', 
-                'Medical Conditions': 'None', 
-                'Medications': 'None', 
-                'Prior Fractures': 'No'
-            }
-        },
-         {
-            "name": "Moderate Risk Female (Elderly but Healthy Habits)",
-            "inputs": {
-                'Age': 75, 
-                'Gender': 'Female', 
-                'Hormonal Changes': 'Postmenopausal',
-                'Family History': 'No', 
-                'Race/Ethnicity': 'Asian', 
-                'Body Weight': 'Normal',
-                'Calcium Intake': 'Adequate', 
-                'Vitamin D Intake': 'Sufficient',
-                'Physical Activity': 'Moderate', 
-                'Smoking': 'No', 
-                'Alcohol Consumption': 'Moderate',
-                'Medical Conditions': 'None', 
-                'Medications': 'None', 
-                'Prior Fractures': 'No'
-            }
-        },
-        {
-            "name": "High Risk Male (Smoker, Heavy Drinker, Medical Issues)",
-            "inputs": {
-                'Age': 60, 
-                'Gender': 'Male', 
-                'Hormonal Changes': 'Normal', 
-                'Family History': 'Yes', 
-                'Race/Ethnicity': 'Caucasian', 
-                'Body Weight': 'Underweight',
-                'Calcium Intake': 'Low', 
-                'Vitamin D Intake': 'Insufficient',
-                'Physical Activity': 'Sedentary', 
-                'Smoking': 'Yes', 
-                'Alcohol Consumption': 'Heavy',
-                'Medical Conditions': 'Thyroid Disorders', 
-                'Medications': 'Corticosteroids', 
-                'Prior Fractures': 'Yes'
-            }
+# ============================================================================
+# PART 1: MANUAL TEST CASES (Edge cases and specific scenarios)
+# ============================================================================
+print("\n" + "=" * 70)
+print("PART 1: MANUAL TEST CASES")
+print("=" * 70)
+
+manual_test_cases = [
+    {
+        "name": "High Risk Female (Postmenopausal, Smoker, Low Calcium)",
+        "inputs": {
+            'Age': 65, 
+            'Gender': 'Female', 
+            'Hormonal Changes': 'Postmenopausal',
+            'Family History': 'Yes', 
+            'Race/Ethnicity': 'Caucasian', 
+            'Body Weight': 'Underweight',
+            'Calcium Intake': 'Low', 
+            'Vitamin D Intake': 'Insufficient',
+            'Physical Activity': 'Sedentary', 
+            'Smoking': 'Yes', 
+            'Alcohol Consumption': 'Heavy',
+            'Medical Conditions': 'Rheumatoid Arthritis', 
+            'Medications': 'Corticosteroids', 
+            'Prior Fractures': 'Yes'
         }
-    ]
+    },
+    {
+        "name": "Low Risk Male (Active, Young, Healthy)",
+        "inputs": {
+            'Age': 30, 
+            'Gender': 'Male', 
+            'Hormonal Changes': 'Normal',
+            'Family History': 'No', 
+            'Race/Ethnicity': 'African American', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Adequate', 
+            'Vitamin D Intake': 'Sufficient',
+            'Physical Activity': 'Active', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'None',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "Moderate Risk Female (Elderly but Healthy Habits)",
+        "inputs": {
+            'Age': 70, 
+            'Gender': 'Female', 
+            'Hormonal Changes': 'Postmenopausal',
+            'Family History': 'No', 
+            'Race/Ethnicity': 'Asian', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Adequate', 
+            'Vitamin D Intake': 'Sufficient',
+            'Physical Activity': 'Active', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'None',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "High Risk Male (Smoker, Heavy Drinker, Medical Issues)",
+        "inputs": {
+            'Age': 60, 
+            'Gender': 'Male', 
+            'Hormonal Changes': 'Low Testosterone',
+            'Family History': 'Yes', 
+            'Race/Ethnicity': 'Caucasian', 
+            'Body Weight': 'Underweight',
+            'Calcium Intake': 'Low', 
+            'Vitamin D Intake': 'Insufficient',
+            'Physical Activity': 'Sedentary', 
+            'Smoking': 'Yes', 
+            'Alcohol Consumption': 'Heavy',
+            'Medical Conditions': 'Thyroid Disorders', 
+            'Medications': 'Corticosteroids', 
+            'Prior Fractures': 'Yes'
+        }
+    }
+]
 
-    print("\nSTARTING PREDICTION TESTS")
-    print("=" * 60)
-
-    for case in test_cases:
-        print(f"\nTEST CASE: {case['name']}")
-        inputs = case['inputs']
+for test_case in manual_test_cases:
+    print(f"\nTEST CASE: {test_case['name']}")
+    try:
+        prediction, risk_score = make_prediction(
+            test_case['inputs'], 
+            male_model, 
+            female_model, 
+            label_encoders, 
+            scaler
+        )
         
-        try:
-            # Make Prediction
-            prediction, risk_score = make_prediction(inputs, male_model, female_model, label_encoders, scaler)
+        print(f"   Gender: {test_case['inputs']['Gender']}")
+        print(f"   Risk Score: {risk_score:.4f} ({risk_score*100:.1f}%)")
+        print(f"   Prediction: {'Osteoporosis' if prediction == 1 else 'No Osteoporosis'}")
             
-            print(f"   Gender: {inputs['Gender']}")
-            print(f"   Risk Score: {risk_score:.4f} ({risk_score*100:.1f}%)")
-            print(f"   Prediction: {'Osteoporosis' if prediction == 1 else 'Normal'}")
-            
-            if risk_score > 0.5:
-                print("   Result: HIGH RISK")
-            else:
-                print("   Result: LOW RISK")
-                
-        except Exception as e:
-            print(f"   ERROR: {e}")
+    except Exception as e:
+        print(f"   ERROR: {e}")
 
-    print("\n" + "=" * 60)
-    print("TESTS COMPLETED.")
+# ============================================================================
+# PART 2: REAL DATA SAMPLES FROM CSV
+# ============================================================================
+print("\n" + "=" * 70)
+print("PART 2: REAL DATA SAMPLES (from osteoporosis_data.csv)")
+print("=" * 70)
 
-if __name__ == "__main__":
-    run_tests()
+# Load the CSV
+df = pd.read_csv('data/osteoporosis_data.csv')
+
+# Get samples: 3 with Osteoporosis=0, 3 with Osteoporosis=1
+osteo_negative = df[df['Osteoporosis'] == 0].sample(n=3, random_state=42)
+osteo_positive = df[df['Osteoporosis'] == 1].sample(n=3, random_state=42)
+
+real_samples = pd.concat([osteo_negative, osteo_positive])
+
+print(f"\nTesting {len(real_samples)} real samples from training data...")
+
+for idx, row in real_samples.iterrows():
+    # Convert row to input format
+    inputs = {
+        'Age': int(row['Age']),
+        'Gender': row['Gender'],
+        'Hormonal Changes': row['Hormonal Changes'],
+        'Family History': row['Family History'],
+        'Race/Ethnicity': row['Race/Ethnicity'],
+        'Body Weight': row['Body Weight'],
+        'Calcium Intake': row['Calcium Intake'],
+        'Vitamin D Intake': row['Vitamin D Intake'],
+        'Physical Activity': row['Physical Activity'],
+        'Smoking': row['Smoking'],
+        'Alcohol Consumption': row['Alcohol Consumption'] if pd.notna(row['Alcohol Consumption']) else 'None',
+        'Medical Conditions': row['Medical Conditions'] if pd.notna(row['Medical Conditions']) else 'None',
+        'Medications': row['Medications'] if pd.notna(row['Medications']) else 'None',
+        'Prior Fractures': row['Prior Fractures']
+    }
+    
+    actual_label = int(row['Osteoporosis'])
+    
+    print(f"\n[Sample ID: {int(row['Id'])}] {row['Gender']}, Age {int(row['Age'])} | Actual: {'OSTEO' if actual_label == 1 else 'HEALTHY'}")
+    
+    try:
+        prediction, risk_score = make_prediction(inputs, male_model, female_model, label_encoders, scaler)
+        
+        print(f"   Risk Score: {risk_score:.4f} ({risk_score*100:.1f}%)")
+        print(f"   Prediction: {'Osteoporosis' if prediction == 1 else 'No Osteoporosis'}")
+        print(f"   Actual: {'Osteoporosis' if actual_label == 1 else 'No Osteoporosis'}")
+        
+        # Check if prediction matches
+        match = "[CORRECT]" if prediction == actual_label else "[WRONG]"
+        print(f"   Result: {match}")
+        
+    except Exception as e:
+        print(f"   ERROR: {e}")
+
+# ============================================================================
+# SUMMARY
+# ============================================================================
+print("\n" + "=" * 70)
+print("TESTS COMPLETED")
+print("=" * 70)
+print("\nThis test covers:")
+print("  + Manual edge cases (high/low/moderate risk)")
+print("  + Real training data samples (both classes)")
+print("  + Both male and female predictions)")
+print("\nFor production use, the model should:")
+print("  - Score high-risk cases > 70%")
+print("  - Score low-risk cases < 30%")
+print("  - Correctly classify most training samples")
+print("=" * 70)

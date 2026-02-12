@@ -323,14 +323,15 @@ def main():
             prediction, risk_score = make_prediction(user_inputs, male_model, female_model, label_encoders, scaler)
             
             # Display results
+            # Determine prediction label
+            prediction_label = "Osteoporosis" if prediction == 1 else "No Osteoporosis"
+            prediction_color = "#FF4B4B" if prediction == 1 else "#00D9A3"
+            
             st.markdown(f"""
             <div class="result-container">
-            <h3>Estimated Osteoporosis Risk</h3>
-            <h1 style="color: #FF4B4B; font-size: 54px;">{risk_score:.1%}</h1>
-            <p style="color: #E0E0E0; font-style: italic;">
-            {"⚠️ High risk detected. Bone density screening (DXA scan) strongly recommended." if risk_score > 0.5 
-             else "Lower relative risk based on provided factors. Continue healthy bone habits."}
-            </p>
+            <h3>Assessment Results</h3>
+            <p style="font-size: 18px; color: #E0E0E0; margin-bottom: 10px;">Risk Score: <strong style="color: {prediction_color};">{risk_score:.4f} ({risk_score*100:.1f}%)</strong></p>
+            <p style="font-size: 18px; color: #E0E0E0;">Prediction: <strong style="color: {prediction_color};">{prediction_label}</strong></p>
             </div>
             """, unsafe_allow_html=True)
             
