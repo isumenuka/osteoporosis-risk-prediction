@@ -83,18 +83,9 @@ def get_model_paths() -> Dict[str, str]:
     base_dir = os.path.dirname(os.path.abspath(__file__))
     models_dir = os.path.join(base_dir, 'models')
     
-    # Dynamic Model Loading Logic
-    # 1. Search for Male Model
-    male_model_path = os.path.join(models_dir, 'osteoporosis_male_model.pkl') # Default
-    male_candidates = glob.glob(os.path.join(models_dir, 'osteoporosis_male_*_model.pkl'))
-    if male_candidates:
-        male_model_path = male_candidates[0] # Take first match
-        
-    # 2. Search for Female Model
-    female_model_path = os.path.join(models_dir, 'osteoporosis_female_model.pkl') # Default
-    female_candidates = glob.glob(os.path.join(models_dir, 'osteoporosis_female_*_model.pkl'))
-    if female_candidates:
-        female_model_path = female_candidates[0] # Take first match
+    # Explicitly use the specific random forest model files
+    male_model_path = os.path.join(models_dir, 'osteoporosis_male_random_forest_model.pkl')
+    female_model_path = os.path.join(models_dir, 'osteoporosis_female_random_forest_model.pkl')
 
     return {
         'male_model': male_model_path,
@@ -308,9 +299,14 @@ def make_prediction(user_inputs, male_model, female_model, label_encoders, scale
                 st.warning(f"Value '{val}' not found in trained model features for '{col}'. Using default.")
                 df_input[col] = 0 # Default fallback
     
-    # 4. Apply scaling
+    # 4. Enforce Column Order
+    expected_features = get_feature_names()
+    df_input = df_input[expected_features]
+
+    # 5. Apply scaling & Restore Feature Names
     try:
-        df_scaled = scaler.transform(df_input)
+        scaled_array = scaler.transform(df_input)
+        df_scaled = pd.DataFrame(scaled_array, columns=expected_features)
     except ValueError as e:
         # Handle feature name mismatch if any
         print(f"Scaling error: {e}")
