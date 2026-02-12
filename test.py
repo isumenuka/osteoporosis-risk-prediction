@@ -101,6 +101,254 @@ manual_test_cases = [
             'Medications': 'Corticosteroids', 
             'Prior Fractures': 'Yes'
         }
+    },
+    # NEW TEST CASES - Covering more diverse scenarios
+    {
+        "name": "Low Risk Young Female Athlete",
+        "inputs": {
+            'Age': 25, 
+            'Gender': 'Female', 
+            'Hormonal Changes': 'Normal',
+            'Family History': 'No', 
+            'Race/Ethnicity': 'Caucasian', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Adequate', 
+            'Vitamin D Intake': 'Sufficient',
+            'Physical Activity': 'Active', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'None',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "Moderate Risk Underweight Young Female",
+        "inputs": {
+            'Age': 28, 
+            'Gender': 'Female', 
+            'Hormonal Changes': 'Normal',
+            'Family History': 'Yes', 
+            'Race/Ethnicity': 'Asian', 
+            'Body Weight': 'Underweight',
+            'Calcium Intake': 'Low', 
+            'Vitamin D Intake': 'Insufficient',
+            'Physical Activity': 'Active', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'None',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "Low Risk Middle-aged Male (Good Habits)",
+        "inputs": {
+            'Age': 45, 
+            'Gender': 'Male', 
+            'Hormonal Changes': 'Normal',
+            'Family History': 'No', 
+            'Race/Ethnicity': 'African American', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Adequate', 
+            'Vitamin D Intake': 'Sufficient',
+            'Physical Activity': 'Active', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'Moderate',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "High Risk Elderly Female (Multiple Risk Factors)",
+        "inputs": {
+            'Age': 75, 
+            'Gender': 'Female', 
+            'Hormonal Changes': 'Postmenopausal',
+            'Family History': 'Yes', 
+            'Race/Ethnicity': 'Caucasian', 
+            'Body Weight': 'Underweight',
+            'Calcium Intake': 'Low', 
+            'Vitamin D Intake': 'Insufficient',
+            'Physical Activity': 'Sedentary', 
+            'Smoking': 'Yes', 
+            'Alcohol Consumption': 'Moderate',
+            'Medical Conditions': 'Rheumatoid Arthritis', 
+            'Medications': 'Corticosteroids', 
+            'Prior Fractures': 'Yes'
+        }
+    },
+    {
+        "name": "Moderate Risk Male (Family History, Sedentary)",
+        "inputs": {
+            'Age': 55, 
+            'Gender': 'Male', 
+            'Hormonal Changes': 'Normal',
+            'Family History': 'Yes', 
+            'Race/Ethnicity': 'Caucasian', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Adequate', 
+            'Vitamin D Intake': 'Sufficient',
+            'Physical Activity': 'Sedentary', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'Moderate',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "High Risk Postmenopausal Female (Prior Fractures)",
+        "inputs": {
+            'Age': 62, 
+            'Gender': 'Female', 
+            'Hormonal Changes': 'Postmenopausal',
+            'Family History': 'Yes', 
+            'Race/Ethnicity': 'Asian', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Low', 
+            'Vitamin D Intake': 'Insufficient',
+            'Physical Activity': 'Sedentary', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'None',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'Yes'
+        }
+    },
+    {
+        "name": "Low Risk Young Male (Good Nutrition)",
+        "inputs": {
+            'Age': 22, 
+            'Gender': 'Male', 
+            'Hormonal Changes': 'Normal',
+            'Family History': 'No', 
+            'Race/Ethnicity': 'Asian', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Adequate', 
+            'Vitamin D Intake': 'Sufficient',
+            'Physical Activity': 'Active', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'None',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "Moderate Risk Female (Thyroid Disorder, Good Habits)",
+        "inputs": {
+            'Age': 50, 
+            'Gender': 'Female', 
+            'Hormonal Changes': 'Postmenopausal',
+            'Family History': 'No', 
+            'Race/Ethnicity': 'Caucasian', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Adequate', 
+            'Vitamin D Intake': 'Sufficient',
+            'Physical Activity': 'Active', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'None',
+            'Medical Conditions': 'Thyroid Disorders', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "High Risk Male (Corticosteroid Use)",
+        "inputs": {
+            'Age': 58, 
+            'Gender': 'Male', 
+            'Hormonal Changes': 'Normal',
+            'Family History': 'No', 
+            'Race/Ethnicity': 'Caucasian', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Adequate', 
+            'Vitamin D Intake': 'Sufficient',
+            'Physical Activity': 'Sedentary', 
+            'Smoking': 'Yes', 
+            'Alcohol Consumption': 'Heavy',
+            'Medical Conditions': 'Rheumatoid Arthritis', 
+            'Medications': 'Corticosteroids', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "Low Risk Middle-aged Female (Perimenopausal, Active)",
+        "inputs": {
+            'Age': 48, 
+            'Gender': 'Female', 
+            'Hormonal Changes': 'Perimenopausal',
+            'Family History': 'No', 
+            'Race/Ethnicity': 'African American', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Adequate', 
+            'Vitamin D Intake': 'Sufficient',
+            'Physical Activity': 'Active', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'None',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "Moderate Risk Sedentary Young Male",
+        "inputs": {
+            'Age': 35, 
+            'Gender': 'Male', 
+            'Hormonal Changes': 'Normal',
+            'Family History': 'Yes', 
+            'Race/Ethnicity': 'Asian', 
+            'Body Weight': 'Underweight',
+            'Calcium Intake': 'Low', 
+            'Vitamin D Intake': 'Insufficient',
+            'Physical Activity': 'Sedentary', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'None',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "High Risk Female Smoker (Poor Nutrition)",
+        "inputs": {
+            'Age': 55, 
+            'Gender': 'Female', 
+            'Hormonal Changes': 'Postmenopausal',
+            'Family History': 'No', 
+            'Race/Ethnicity': 'Caucasian', 
+            'Body Weight': 'Underweight',
+            'Calcium Intake': 'Low', 
+            'Vitamin D Intake': 'Insufficient',
+            'Physical Activity': 'Sedentary', 
+            'Smoking': 'Yes', 
+            'Alcohol Consumption': 'Heavy',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
+    },
+    {
+        "name": "Low Risk Elderly Male (Excellent Habits)",
+        "inputs": {
+            'Age': 68, 
+            'Gender': 'Male', 
+            'Hormonal Changes': 'Normal',
+            'Family History': 'No', 
+            'Race/Ethnicity': 'African American', 
+            'Body Weight': 'Normal',
+            'Calcium Intake': 'Adequate', 
+            'Vitamin D Intake': 'Sufficient',
+            'Physical Activity': 'Active', 
+            'Smoking': 'No', 
+            'Alcohol Consumption': 'None',
+            'Medical Conditions': 'None', 
+            'Medications': 'None', 
+            'Prior Fractures': 'No'
+        }
     }
 ]
 

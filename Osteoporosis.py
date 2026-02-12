@@ -205,33 +205,65 @@ def get_user_inputs():
         'Medical Conditions': medical_conditions, 'Medications': medications, 'Prior Fractures': prior_fractures
     }
 
-def generate_recommendations(user_inputs, risk_score):
-    """Generate personalized health recommendations based on risk factors"""
+def generate_recommendations(user_inputs, risk_score, prediction):
+    """Generate personalized health recommendations based on prediction and risk factors"""
     recommendations = []
     
-    if user_inputs['Calcium Intake'] == "Low":
-        recommendations.append("• **Increase calcium intake** to 1000-1200mg daily (dairy, leafy greens, fortified foods)")
-    
-    if user_inputs['Vitamin D Intake'] == "Insufficient":
-        recommendations.append("• **Boost Vitamin D** through sunlight exposure (10-15 min daily) or supplements (800-1000 IU)")
-    
-    if user_inputs['Physical Activity'] == "Sedentary":
-        recommendations.append("• **Start weight-bearing exercise** like walking, jogging, or resistance training (30 min, 4-5x/week)")
-    
-    if user_inputs['Smoking'] == "Yes":
-        recommendations.append("• **Quit smoking** - it significantly accelerates bone loss")
-    
-    if user_inputs['Alcohol Consumption'] == "Heavy":
-        recommendations.append("• **Reduce alcohol consumption** to ≤1 drink/day for women, ≤2 for men")
-    
-    if user_inputs['Body Weight'] == "Underweight":
-        recommendations.append("• **Maintain healthy body weight** - consult a nutritionist if BMI < 18.5")
-    
-    if risk_score > 0.5:
-        recommendations.append("• **Schedule a bone density test (DXA scan)** with your healthcare provider")
-        recommendations.append("• **Consult an endocrinologist or rheumatologist** for comprehensive evaluation")
-    
+    # Different recommendations based on prediction
+    if prediction == 1:  # Osteoporosis predicted
+        recommendations.append("### 🚨 **Immediate Actions Required:**")
+        recommendations.append("• **Schedule a bone density test (DXA scan)** with your healthcare provider immediately")
+        recommendations.append("• **Consult an endocrinologist or rheumatologist** for comprehensive evaluation and treatment plan")
+        
+        recommendations.append("\n### 💊 **Treatment & Management:**")
+        if user_inputs['Calcium Intake'] == "Low":
+            recommendations.append("• **Increase calcium intake** to 1000-1200mg daily (dairy, leafy greens, fortified foods)")
+        
+        if user_inputs['Vitamin D Intake'] == "Insufficient":
+            recommendations.append("• **Boost Vitamin D** through sunlight exposure (10-15 min daily) or supplements (800-1000 IU)")
+        
+        if user_inputs['Smoking'] == "Yes":
+            recommendations.append("• **Quit smoking immediately** - it significantly accelerates bone loss")
+        
+        if user_inputs['Alcohol Consumption'] == "Heavy":
+            recommendations.append("• **Reduce alcohol consumption** to ≤1 drink/day for women, ≤2 for men")
+        
+        recommendations.append("• **Discuss medication options** with your doctor (bisphosphonates, hormone therapy, etc.)")
+        recommendations.append("• **Fall prevention** - remove hazards at home, use assistive devices if needed")
+        
+    else:  # No Osteoporosis - Prevention focused
+        recommendations.append("### ✅ **Continue Good Bone Health Practices:**")
+        
+        if user_inputs['Calcium Intake'] == "Adequate":
+            recommendations.append("• **Maintain adequate calcium intake** (1000-1200mg daily)")
+        elif user_inputs['Calcium Intake'] == "Low":
+            recommendations.append("• **Increase calcium intake** to 1000-1200mg daily (dairy, leafy greens, fortified foods)")
+        
+        if user_inputs['Vitamin D Intake'] == "Sufficient":
+            recommendations.append("• **Keep up Vitamin D levels** through sunlight and diet")
+        elif user_inputs['Vitamin D Intake'] == "Insufficient":
+            recommendations.append("• **Boost Vitamin D** through sunlight exposure (10-15 min daily) or supplements (800-1000 IU)")
+        
+        if user_inputs['Physical Activity'] == "Active":
+            recommendations.append("• **Continue regular weight-bearing exercise** (walking, jogging, resistance training)")
+        elif user_inputs['Physical Activity'] == "Sedentary":
+            recommendations.append("• **Start weight-bearing exercise** like walking, jogging, or resistance training (30 min, 4-5x/week)")
+        
+        if user_inputs['Smoking'] == "Yes":
+            recommendations.append("• **Quit smoking** to prevent bone loss")
+        
+        if user_inputs['Alcohol Consumption'] == "Heavy":
+            recommendations.append("• **Reduce alcohol consumption** to ≤1 drink/day for women, ≤2 for men")
+        
+        if user_inputs['Body Weight'] == "Underweight":
+            recommendations.append("• **Maintain healthy body weight** - consult a nutritionist if BMI < 18.5")
+        
+        recommendations.append("\n### 📅 **Regular Monitoring:**")
+        if user_inputs['Age'] >= 50 or user_inputs['Gender'] == 'Female':
+            recommendations.append("• **Consider baseline bone density screening** after age 50 (women) or 65 (men)")
+        
     return recommendations
+
 
 def make_prediction(user_inputs, male_model, female_model, label_encoders, scaler):
     """Make osteoporosis risk prediction using gender-specific models"""
@@ -336,10 +368,9 @@ def main():
             """, unsafe_allow_html=True)
             
             # Personalized recommendations (Use original user inputs, not mapped ones)
-            recommendations = generate_recommendations(user_inputs, risk_score)
+            recommendations = generate_recommendations(user_inputs, risk_score, prediction)
             
             if recommendations:
-                st.markdown("### 🦴 **Bone Health Recommendations:**")
                 for rec in recommendations:
                     st.markdown(rec)
             else:
