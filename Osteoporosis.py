@@ -76,42 +76,45 @@ VALUE_MAPPING = {
 
 def get_model_paths() -> Dict[str, str]:
     """
-    Get the absolute paths to model files.
-    The models are expected to be in a 'models' directory alongside this script (or in the project root).
+    Get the absolute paths to all model files.
+    The models are expected to be in a 'models' directory alongside this script.
     """
-    # Get the directory where this script is located
     base_dir = os.path.dirname(os.path.abspath(__file__))
     models_dir = os.path.join(base_dir, 'models')
-    
-    # Explicitly use the specific random forest model files
-    male_model_path = os.path.join(models_dir, 'osteoporosis_male_random_forest_model.pkl')
-    female_model_path = os.path.join(models_dir, 'osteoporosis_female_random_forest_model.pkl')
 
     return {
-        'male_model': male_model_path,
-        'female_model': female_model_path,
+        # Male models
+        'male_rf_model':  os.path.join(models_dir, 'osteoporosis_male_random_forest_model.pkl'),
+        'male_ada_model': os.path.join(models_dir, 'osteoporosis_male_adaboost_model_2nd.pkl'),
+        # Female models
+        'female_rf_model': os.path.join(models_dir, 'osteoporosis_female_random_forest_model.pkl'),
+        'female_et_model':  os.path.join(models_dir, 'osteoporosis_female_extra_trees_model_2nd.pkl'),
+        # Shared assets
         'encoders': os.path.join(models_dir, 'label_encoders.pkl'),
-        'scaler': os.path.join(models_dir, 'scaler.pkl')
+        'scaler':   os.path.join(models_dir, 'scaler.pkl')
     }
 
 @st.cache_resource
-def load_model_assets() -> Tuple[Any, Any, Dict, Any]:
+def load_model_assets() -> Tuple[Dict[str, Any], Dict, Any]:
     """
-    Load the trained models, label encoders, and scaler.
+    Load all trained models, label encoders, and scaler.
+    Returns a dict with all four models keyed by name, plus encoders and scaler.
     Uses Streamlit's cache_resource to load models only once.
     """
     paths = get_model_paths()
     
     try:
-        male_model = joblib.load(paths['male_model'])
-        female_model = joblib.load(paths['female_model'])
+        models = {
+            'male_rf':   joblib.load(paths['male_rf_model']),
+            'male_ada':  joblib.load(paths['male_ada_model']),
+            'female_rf': joblib.load(paths['female_rf_model']),
+            'female_et': joblib.load(paths['female_et_model']),
+        }
         label_encoders = joblib.load(paths['encoders'])
         scaler = joblib.load(paths['scaler'])
-        
-        return male_model, female_model, label_encoders, scaler
-    
+        return models, label_encoders, scaler
+
     except FileNotFoundError as e:
-        # Construct helpful error message if files are missing
         st.error(f"Error: Model file not found at {e.filename}")
         st.info("Ensure that the 'models' folder exists in the same directory as this script and contains the .pkl files.")
         st.stop()
@@ -149,6 +152,17 @@ def apply_custom_css():
         </style>
         """, unsafe_allow_html=True)
 
+# Model display name -> internal model dict key
+MALE_MODELS = {
+    "Random Forest (1st Model)": "male_rf",
+    "AdaBoost (2nd Model)": "male_ada",
+}
+FEMALE_MODELS = {
+    "Random Forest (1st Model)": "female_rf",
+    "Extra Trees (2nd Model)": "female_et",
+}
+
+
 def get_user_inputs():
     """Render input form and collect user data"""
     col1, col2 = st.columns(2)
@@ -158,6 +172,22 @@ def get_user_inputs():
         
         gender = st.selectbox("Gender", options=["Male", "Female"], 
                              help="Biological sex - women have higher risk due to lower bone density")
+
+        # Dynamic model selection based on gender
+        if gender == "Male":
+            model_display_name = st.selectbox(
+                "Select Prediction Model",
+                options=list(MALE_MODELS.keys()),
+                help="Choose which trained male model to use for prediction."
+            )
+            selected_model_key = MALE_MODELS[model_display_name]
+        else:
+            model_display_name = st.selectbox(
+                "Select Prediction Model",
+                options=list(FEMALE_MODELS.keys()),
+                help="Choose which trained female model to use for prediction."
+            )
+            selected_model_key = FEMALE_MODELS[model_display_name]
         
         hormonal_changes = st.selectbox("Hormonal Status",
                                        options=["Normal", "Postmenopausal", "Perimenopausal", "Low Testosterone"],
@@ -207,7 +237,9 @@ def get_user_inputs():
         'Family History': family_history, 'Race/Ethnicity': race, 'Body Weight': body_weight,
         'Calcium Intake': calcium_intake, 'Vitamin D Intake': vitamin_d,
         'Physical Activity': physical_activity, 'Smoking': smoking, 'Alcohol Consumption': alcohol,
-        'Medical Conditions': medical_conditions, 'Medications': medications, 'Prior Fractures': prior_fractures
+        'Medical Conditions': medical_conditions, 'Medications': medications, 'Prior Fractures': prior_fractures,
+        '_selected_model_key': selected_model_key,
+        '_model_display_name': model_display_name,
     }
 
 def generate_recommendations(user_inputs, risk_score, prediction):
@@ -270,71 +302,62 @@ def generate_recommendations(user_inputs, risk_score, prediction):
     return recommendations
 
 
-def make_prediction(user_inputs, male_model, female_model, label_encoders, scaler):
-    """Make osteoporosis risk prediction using gender-specific models"""
-    # 1. Create a dictionary for model input, applying mapping
+def make_prediction(user_inputs, all_models, label_encoders, scaler):
+    """Make osteoporosis risk prediction using the user-selected model."""
+    # Extract the chosen model key (private fields, not used as model features)
+    selected_model_key = user_inputs.pop('_selected_model_key')
+    user_inputs.pop('_model_display_name', None)
+
+    # 1. Create a dictionary for model input, applying value mapping
     model_input = {}
-    
     for col, value in user_inputs.items():
-        # Apply mapping if exists for this column
         if col in VALUE_MAPPING:
-            mapped_value = VALUE_MAPPING[col].get(value, value)
-            model_input[col] = mapped_value
+            model_input[col] = VALUE_MAPPING[col].get(value, value)
         else:
             model_input[col] = value
-            
+
     # 2. Convert to DataFrame
     df_input = pd.DataFrame([model_input])
-    
+
     # 3. Apply label encoding
     for col in label_encoders.keys():
         if col in df_input.columns:
             le = label_encoders[col]
             val = df_input[col].iloc[0]
             try:
-                # Handle unseen labels carefully
                 df_input[col] = le.transform([val])
             except ValueError:
-                # Fallback to the most common class or 0 if truly unknown
                 st.warning(f"Value '{val}' not found in trained model features for '{col}'. Using default.")
-                df_input[col] = 0 # Default fallback
-    
-    # 4. Enforce Column Order
+                df_input[col] = 0
+
+    # 4. Enforce column order
     expected_features = get_feature_names()
     df_input = df_input[expected_features]
 
-    # 5. Apply scaling & Restore Feature Names
+    # 5. Apply scaling
     try:
         scaled_array = scaler.transform(df_input)
         df_scaled = pd.DataFrame(scaled_array, columns=expected_features)
     except ValueError as e:
-        # Handle feature name mismatch if any
         print(f"Scaling error: {e}")
         raise e
-    
-    
-    # 5. Select appropriate model based on gender input (using raw input string from user_inputs)
-    gender_input = user_inputs['Gender']
-    if gender_input == "Male":
-        model = male_model
-    else:
-        model = female_model
-        
-    # 6. Make prediction
+
+    # 6. Select the user-chosen model
+    model = all_models[selected_model_key]
+
+    # 7. Make prediction
     prediction = model.predict(df_scaled)[0]
-    
-    # 7. Handle proba calculation for different model types
+
+    # 8. Probability / risk score
     if hasattr(model, 'predict_proba'):
         prediction_proba = model.predict_proba(df_scaled)[0]
-        # Get probability of positive class (Index 1)
         risk_score = prediction_proba[1] if len(prediction_proba) > 1 else prediction_proba[0]
     else:
-        # Fallback for models without predict_proba
         raw_pred = model.predict(df_scaled)
         if hasattr(raw_pred, 'shape') and len(raw_pred.shape) > 1 and raw_pred.shape[-1] == 1:
-             risk_score = float(raw_pred[0][0])
+            risk_score = float(raw_pred[0][0])
         else:
-             risk_score = float(prediction)
+            risk_score = float(prediction)
 
     return prediction, risk_score
 
@@ -344,54 +367,61 @@ def make_prediction(user_inputs, male_model, female_model, label_encoders, scale
 
 def main():
     """Main application function"""
-    # Apply custom styling
     apply_custom_css()
-    
-    # Load model assets
-    male_model, female_model, label_encoders, scaler = load_model_assets()
-    
-    # Page title and description
+
+    # Load all model assets once
+    all_models, label_encoders, scaler = load_model_assets()
+
     st.title("🦴 Osteoporosis Risk Assessment")
     st.write("Enter the following details to estimate your bone health risk.")
-    
-    # Get user inputs
+
     with st.container():
         user_inputs = get_user_inputs()
-    
-    # Prediction button
+
+    # Show which model is selected (informational)
+    model_name = user_inputs.get('_model_display_name', '')
+    gender = user_inputs.get('Gender', '')
+    st.caption(f"🔬 Using **{model_name}** for {gender} prediction")
+
     if st.button("Calculate Osteoporosis Risk"):
         try:
-            # Pass all models to prediction function
-            prediction, risk_score = make_prediction(user_inputs, male_model, female_model, label_encoders, scaler)
-            
-            # Display results
-            # Determine prediction label
+            # Keep a copy of raw inputs for recommendations (before pop)
+            raw_inputs_copy = {k: v for k, v in user_inputs.items()
+                               if not k.startswith('_')}
+
+            prediction, risk_score = make_prediction(user_inputs, all_models, label_encoders, scaler)
+
             prediction_label = "Osteoporosis" if prediction == 1 else "No Osteoporosis"
             prediction_color = "#FF4B4B" if prediction == 1 else "#00D9A3"
-            
+
             st.markdown(f"""
             <div class="result-container">
             <h3>Assessment Results</h3>
-            <p style="font-size: 18px; color: #E0E0E0; margin-bottom: 10px;">Risk Score: <strong style="color: {prediction_color};">{risk_score:.4f} ({risk_score*100:.1f}%)</strong></p>
-            <p style="font-size: 18px; color: #E0E0E0;">Prediction: <strong style="color: {prediction_color};">{prediction_label}</strong></p>
+            <p style="font-size: 18px; color: #E0E0E0; margin-bottom: 10px;">
+                Model Used: <strong style="color: #A0A0FF;">{model_name}</strong>
+            </p>
+            <p style="font-size: 18px; color: #E0E0E0; margin-bottom: 10px;">
+                Risk Score: <strong style="color: {prediction_color};">{risk_score:.4f} ({risk_score*100:.1f}%)</strong>
+            </p>
+            <p style="font-size: 18px; color: #E0E0E0;">
+                Prediction: <strong style="color: {prediction_color};">{prediction_label}</strong>
+            </p>
             </div>
             """, unsafe_allow_html=True)
-            
-            # Personalized recommendations (Use original user inputs, not mapped ones)
-            recommendations = generate_recommendations(user_inputs, risk_score, prediction)
-            
+
+            recommendations = generate_recommendations(raw_inputs_copy, risk_score, prediction)
             if recommendations:
                 for rec in recommendations:
                     st.markdown(rec)
             else:
                 st.success("✅ Continue your current healthy bone practices!")
-        
+
         except Exception as e:
             st.error(f"Error during prediction: {str(e)}")
             st.error("Please ensure all inputs are valid.")
-        
-        # Medical disclaimer
+
         st.info("**Note:** This tool is for informational purposes only and is not a substitute for professional medical advice, diagnosis, or treatment.")
+
 
 if __name__ == "__main__":
     main()
