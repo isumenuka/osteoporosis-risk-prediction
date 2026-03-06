@@ -175,17 +175,19 @@ def get_user_inputs():
 
         # Dynamic model selection based on gender
         if gender == "Male":
-            model_display_name = st.selectbox(
+            model_display_name = st.radio(
                 "Select Prediction Model",
                 options=list(MALE_MODELS.keys()),
-                help="Choose which trained male model to use for prediction."
+                help="Choose which trained male model to use for prediction.",
+                horizontal=True
             )
             selected_model_key = MALE_MODELS[model_display_name]
         else:
-            model_display_name = st.selectbox(
+            model_display_name = st.radio(
                 "Select Prediction Model",
                 options=list(FEMALE_MODELS.keys()),
-                help="Choose which trained female model to use for prediction."
+                help="Choose which trained female model to use for prediction.",
+                horizontal=True
             )
             selected_model_key = FEMALE_MODELS[model_display_name]
         
