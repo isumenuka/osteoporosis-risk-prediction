@@ -15,7 +15,11 @@ print("=" * 70)
 
 # Load models
 print("\nLOADING MODELS...")
-male_model, female_model, label_encoders, scaler = load_model_assets()
+all_models, label_encoders, scaler = load_model_assets()
+
+# Default model keys used for testing (one per gender)
+DEFAULT_MALE_MODEL_KEY   = 'male_rf'    # or 'male_ada'
+DEFAULT_FEMALE_MODEL_KEY = 'female_rf'  # or 'female_et'
 print("SUCCESS: Models loaded successfully.")
 
 # ============================================================================
@@ -355,11 +359,15 @@ manual_test_cases = [
 for test_case in manual_test_cases:
     print(f"\nTEST CASE: {test_case['name']}")
     try:
+        inputs = dict(test_case['inputs'])  # copy so we don't mutate the original
+        gender = inputs.get('Gender', 'Male')
+        inputs['_selected_model_key'] = DEFAULT_MALE_MODEL_KEY if gender == 'Male' else DEFAULT_FEMALE_MODEL_KEY
+        inputs['_model_display_name']  = inputs['_selected_model_key']
+
         prediction, risk_score = make_prediction(
-            test_case['inputs'], 
-            male_model, 
-            female_model, 
-            label_encoders, 
+            inputs,
+            all_models,
+            label_encoders,
             scaler
         )
         
@@ -412,7 +420,9 @@ for idx, row in real_samples.iterrows():
     print(f"\n[Sample ID: {int(row['Id'])}] {row['Gender']}, Age {int(row['Age'])} | Actual: {'OSTEO' if actual_label == 1 else 'HEALTHY'}")
     
     try:
-        prediction, risk_score = make_prediction(inputs, male_model, female_model, label_encoders, scaler)
+        inputs['_selected_model_key'] = DEFAULT_MALE_MODEL_KEY if inputs['Gender'] == 'Male' else DEFAULT_FEMALE_MODEL_KEY
+        inputs['_model_display_name']  = inputs['_selected_model_key']
+        prediction, risk_score = make_prediction(inputs, all_models, label_encoders, scaler)
         
         print(f"   Risk Score: {risk_score:.4f} ({risk_score*100:.1f}%)")
         print(f"   Prediction: {'Osteoporosis' if prediction == 1 else 'No Osteoporosis'}")
